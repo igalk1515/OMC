@@ -47,23 +47,80 @@ return function (App $app) {
 
     $app->post('/sensordata', \App\Application\Actions\Sensor\SensorDataCreateAction::class);
 
+    // this endpoint is showing the malfunctioning sensors for the last hour in real life the interval should be much shorter
     $app->get('/malfunctioning', function (Request $request, Response $response, $args) use ($app) {
         $repository = $app->getContainer()->get(SqliteSensorDataRepository::class);
-        $repository->detectMalfunctioningSensors();
-        $response->getBody()->write('Malfunctioning sensors have been logged.');
-        return $response->withHeader('Content-Type', 'text/plain');
+        $malfunctioningSensors = $repository->detectMalfunctioningSensors();
+    
+        $sensorData = [];
+        foreach ($malfunctioningSensors as $sensorMessage) {
+            preg_match("/Sensor (\d+) is malfunctioning. Average value: ([\d\.]+), Sensor value: ([\d\.]+)/", $sensorMessage, $matches);
+    
+            if (count($matches) == 4) {
+                $sensorId = $matches[1];
+                $averageValue = $matches[2];
+                $sensorValue = $matches[3];
+    
+                $sensorData[] = [
+                    'sensorId' => $sensorId,
+                    'averageValue' => $averageValue,
+                    'sensorValue' => $sensorValue
+                ];
+            }
+        }
+    
+        usort($sensorData, function($a, $b) {
+            return $a['sensorId'] <=> $b['sensorId'];
+        });
+    
+        $output = '<table border="1">';
+        $output .= '<tr><th>Sensor ID</th><th>Average Value</th><th>Sensor Value</th></tr>';
+    
+        foreach ($sensorData as $sensor) {
+            $output .= "<tr><td>{$sensor['sensorId']}</td><td>{$sensor['averageValue']}</td><td>{$sensor['sensorValue']}</td></tr>";
+        }
+    
+        $output .= '</table>';
+    
+        $response->getBody()->write($output);
+        return $response->withHeader('Content-Type', 'text/html');
     });
+    
+    
 
     $app->get('/past-week', function (Request $request, Response $response, $args) use ($app) {
         $repository = $app->getContainer()->get(SqliteSensorDataRepository::class);
         $averages = $repository->getHourlyAveragesForPastWeek();
-        $response->getBody()->write(json_encode($averages));
-        return $response->withHeader('Content-Type', 'application/json');
+    
+        $html = '<table>';
+        $html .= '<tr><th>Hour</th><th>Face</th><th>Average Temp</th></tr>';
+    
+        foreach ($averages as $average) {
+            $html .= '<tr>';
+            $html .= '<td>' . $average['hour'] . '</td>';
+            $html .= '<td>' . $average['face'] . '</td>';
+            $html .= '<td>' . $average['average_temp'] . '</td>';
+            $html .= '</tr>';
+        }
+    
+        $html .= '</table>';
+    
+        $response->getBody()->write($html);
+        return $response->withHeader('Content-Type', 'text/html');
     });
     
+    // generate data for the past week
     $app->get('/generatedata', function (Request $request, Response $response, $args) use ($app) {
         $repository = $app->getContainer()->get(SqliteSensorDataRepository::class);
         $repository->generateData();
+        $response->getBody()->write('Data has been generated.');
+        return $response->withHeader('Content-Type', 'text/plain');
+    });
+
+    // generate data for the past hour
+    $app->get('/generatedatahour', function (Request $request, Response $response, $args) use ($app) {
+        $repository = $app->getContainer()->get(SqliteSensorDataRepository::class);
+        $repository->generateDataForPastHour();
         $response->getBody()->write('Data has been generated.');
         return $response->withHeader('Content-Type', 'text/plain');
     });
@@ -109,9 +166,5 @@ return function (App $app) {
         return $response->withHeader('Content-Type', 'text/html');
     });
     
-    
-    
-    
-    
-    
+    $app->delete('/sensors/{id}', \App\Application\Actions\Sensor\DeleteSensorAction::class);
 };
