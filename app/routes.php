@@ -16,23 +16,6 @@ return function (App $app) {
         return $response;
     });
 
-    $app->get('/', function (Request $request, Response $response, $args) {
-        $html = '
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Hello World</title>
-            </head>
-            <body>
-                <h1>Hello World!</h1>
-            </body>
-            </html>
-        ';
-    
-        $response->getBody()->write($html);
-        return $response->withHeader('Content-Type', 'text/html');
-    });
-
     $app->group('/users', function (Group $group) {
         $group->get('', ListUsersAction::class);
         $group->get('/{id}', ViewUserAction::class);
