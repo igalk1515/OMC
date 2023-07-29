@@ -7,15 +7,15 @@ $one_hour_ago = $current_time - 3600;
 $db = new PDO('sqlite:./sensor.db');
 
 $query = $db->prepare("
-    SELECT 
-        face, 
-        AVG(temperature_value) as avg_temperature 
-    FROM 
-        sensor_data 
-    WHERE 
-        timestamp >= :one_hour_ago AND 
-        timestamp < :current_time 
-    GROUP BY 
+    SELECT
+        face,
+        AVG(temperature_value) as avg_temperature
+    FROM
+        sensor_data
+    WHERE
+        timestamp >= :one_hour_ago AND
+        timestamp < :current_time
+    GROUP BY
         face
 ");
 

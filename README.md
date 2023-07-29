@@ -1,42 +1,41 @@
-# Slim Framework 4 Skeleton Application
+# OMC Atower Assignment
 
-[![Coverage Status](https://coveralls.io/repos/github/slimphp/Slim-Skeleton/badge.svg?branch=master)](https://coveralls.io/github/slimphp/Slim-Skeleton?branch=master)
+This project is a simple API built with Slim Framework and SQLite to demonstrate a system for gathering sensor data and identifying malfunctioning sensors.
 
-Use this skeleton application to quickly setup and start working on a new Slim Framework 4 application. This application uses the latest Slim 4 with Slim PSR-7 implementation and PHP-DI container implementation. It also uses the Monolog logger.
+## Environment
 
-This skeleton application was built for Composer. This makes setting up a new Slim Framework application quick and easy.
+The project was developed and tested using:
 
-## Install the Application
+- PHP 8.2
+- SQLite
+- Slim Framework
+- Windows 10
+- Postman
 
-Run this command from the directory in which you want to install your new Slim Framework application. You will require PHP 7.4 or newer.
+## Running the Project Locally
 
-```bash
-composer create-project slim/slim-skeleton [my-app-name]
-```
+You can start the project locally by running the built-in PHP server:
+php -S localhost:8000 -t public public/index.php
 
-Replace `[my-app-name]` with the desired directory name for your new application. You'll want to:
+## Docker
 
-* Point your virtual host document root to your new application's `public/` directory.
-* Ensure `logs/` is web writable.
+A Dockerfile is also included. To build and run the project using Docker:
+docker build -t omc .
+docker run -p 80:80 omc
 
-To run the application in development, you can run these commands 
+## API Endpoints
 
-```bash
-cd [my-app-name]
-composer start
-```
+Here are the available API endpoints:
 
-Or you can use `docker-compose` to run the app with `docker`, so you can run these commands:
-```bash
-cd [my-app-name]
-docker-compose up -d
-```
-After that, open `http://localhost:8080` in your browser.
+- GET `/testdb`: return all the database, this used for debug purpose
+- POST `/sensordata`: Insert new sensor data.
+- GET `/malfunctioning`: Identify malfunctioning sensors and display them.
+- GET `/past-week`: Display hourly averages for the past week.
+- GET `/generatedata`: Generate data for the past week.
+- GET `/generatedatahour`: Generate data for the past hour.
+- GET `/sensordata/create`: Display a form to create new sensor data.
+- DELETE `/sensors/{id}`: Delete a specific sensor.
 
-Run this command in the application directory to run the test suite
+## Usage
 
-```bash
-composer test
-```
-
-That's it! Now go build something cool.
+Please refer to the source code for more details on the usage of these endpoints.
